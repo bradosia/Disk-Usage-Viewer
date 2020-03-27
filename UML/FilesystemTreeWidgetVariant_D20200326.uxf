@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>220</x>
+      <y>220</y>
+      <w>150</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>FilesystemTreeWidget
+--
+Inherit Chain:
+QTreeView
+QAbstractItemView
+QAbstractScrollArea
+QFrame
+QWidget</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>360</x>
+      <y>220</y>
+      <w>90</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+setModel</panel_attributes>
+    <additional_attributes>70.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>730</x>
+      <y>220</y>
+      <w>150</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>FilesystemTreeModel
+--
+Inherit Chain:
+QAbstractItemModel
+--
+data for view</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>870</x>
+      <y>230</y>
+      <w>50</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>30.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>900</x>
+      <y>220</y>
+      <w>140</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>FilesystemDatabase
+--
+Database access</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>430</x>
+      <y>220</y>
+      <w>190</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>FilesystemTreeProxyModel
+--
+Inherit Chain:
+QSortFilterProxyModel
+--
+For sorting by column
+Or filter by type (dir or file)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>610</x>
+      <y>220</y>
+      <w>140</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+setSourceModel</panel_attributes>
+    <additional_attributes>120.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+</diagram>
