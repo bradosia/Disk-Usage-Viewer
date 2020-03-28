@@ -1,26 +1,29 @@
 /*
- * @name UC Davis PI Web API Browser
+ * @name Disk Usage Viewer
  * @author Branden Lee
  * @version 1.00
  * @license GNU LGPL v3
- * @brief Browser for UC Davis PI Web API data.
- *
- * Data from OSIsoft and UC Davis
+ * @brief Graphical User Interface for analyzing disk usage
+
  * Icons and images owned by their respective owners
  */
 
 #ifndef MAIN_WINDOW_H
 #define MAIN_WINDOW_H
 
-// main UI
-#include "ui_main.h"
+// C++
+#include <memory>
 
-// DiskUsage Module
-#include <DiskUsage/Interface.hpp>
-
-// local project
+// bradosia libraries 1.0
 #include <ModuleManager/ModuleManager.hpp>
 #include <SettingsManager/SettingsManager.hpp>
+
+// Modules
+#include <FilesystemDatabase/Interface.hpp>
+#include <FileTreePane/Interface.hpp>
+
+// Local Project
+#include "ui_main.hpp"
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -32,22 +35,20 @@ public:
         widgetPtr->setParent(nullptr);
       }
   };
+  void loadModules();
+  void fileTreePaneModuleLoaded();
+  void filesystemDatabaseModuleLoaded();
+  void allModulesLoaded();
 
 private:
-  // ui
+  unsigned int modulesLoadedNum;
+  unsigned int modulesLoadedTotalNum;
   std::unique_ptr<Ui::main> ui;
-  std::shared_ptr<UCDPWAB::PluginInterface> UCDPWAB_plugin;
+  std::shared_ptr<FileTreePane::ModuleInterface> fileTreePaneModule;
+  std::shared_ptr<FSDB::ModuleInterface> filesystemDatabaseModule;
   std::vector<std::shared_ptr<QWidget>> centralQWidgetPtrs;
-
-private slots:
-  void on_actionEnergy_triggered();
-
-  void on_actionDiscover_triggered();
-
-  void on_actionWater_triggered();
-
-  void on_actionWiFi_triggered();
-
-  void on_actionTemperature_triggered();
+  std::shared_ptr<bradosia::ModuleManager> moduleManagerPtr;
+  std::shared_ptr<bradosia::SettingsManager> settingsManagerPtr;
+  std::shared_ptr<QWidget> fileTreePaneWidget;
 };
 #endif // MAIN_WINDOW_H

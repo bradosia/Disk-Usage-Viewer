@@ -25,4 +25,5 @@ message( STATUS )
 
 include_directories(.)
 
-add_subdirectory(DiskUsage)
+add_subdirectory(FilesystemDatabase)
+add_subdirectory(FileTreePane)

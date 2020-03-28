@@ -1,14 +1,20 @@
 /*
- * @name UC Davis PI Web API Browser
+ * @name Disk Usage Viewer
  * @author Branden Lee
  * @version 1.00
  * @license GNU LGPL v3
- * @brief Browser for UC Davis PI Web API data.
- *
- * Data from OSIsoft and UC Davis
+ * @brief Graphical User Interface for analyzing disk usage
+
  * Icons and images owned by their respective owners
  */
+// C++
+#include <thread>
 
+// QT5
+#include <QTreeView>
+
+// Local Project
+#include "../core/config.hpp"
 #include "MainWindow.hpp"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
@@ -18,147 +24,85 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   ui->setupUi(this);
   this->setObjectName("MainWindow");
 
-  /* Plugins
+  /* Load modules in another thread and let them appear as they load.
+   * This will give the illusion to the user that the load time is fast.
+   * A splash screen or loading bar will make the program start up seem slow.
+   *
+   * EDIT: can't do this because QT gives error:
+   * QObject: Cannot create children for a parent that is in a different thread.
    */
-  bradosia::ModuleManager moduleManagerObj;
-  bradosia::SettingsManager settingsManagerObj;
-  moduleManagerObj.addPluginInterface<UCDPWAB::PluginInterface>("plugin");
-  moduleManagerObj.loadPlugins("plugins");
-  UCDPWAB_plugin =
-      moduleManagerObj.getPlugin<UCDPWAB::PluginInterface>("plugin");
-  if (UCDPWAB_plugin) {
-    printf("UCDPWAB PLUGIN FOUND\n");
+  modulesLoadedNum = 0;
+  modulesLoadedTotalNum = 2;
+  std::thread loadModulesThread(&MainWindow::loadModules, this);
+  loadModulesThread.join();
+
+  // TODO: Thread these
+  fileTreePaneWidget = fileTreePaneModule->getWidget();
+  filesystemDatabaseModuleLoaded();
+  fileTreePaneModuleLoaded();
+
+  // TODO: Check if widgets need to be added on paint cycles
+  if (fileTreePaneModule) {
+    ui->horizontalLayout->addWidget(fileTreePaneWidget.get());
+    std::shared_ptr<QTreeView> treeViewWidget =
+        std::dynamic_pointer_cast<QTreeView>(fileTreePaneWidget);
+    treeViewWidget->expandAll();
+    treeViewWidget->setColumnWidth(0, 200);
+  }
+}
+
+void MainWindow::loadModules() {
+  settingsManagerPtr = std::make_shared<bradosia::SettingsManager>();
+  /* Module Load
+   */
+  moduleManagerPtr = std::make_shared<bradosia::ModuleManager>();
+  moduleManagerPtr->addModuleInterface<FileTreePane::ModuleInterface>(
+      "fileTreePaneModule");
+  moduleManagerPtr->addModuleInterface<FSDB::ModuleInterface>(
+      "filesystemDatabaseModule");
+  moduleManagerPtr->loadModules("modules");
+  fileTreePaneModule =
+      moduleManagerPtr->getModule<FileTreePane::ModuleInterface>(
+          "fileTreePaneModule");
+  filesystemDatabaseModule = moduleManagerPtr->getModule<FSDB::ModuleInterface>(
+      "filesystemDatabaseModule");
+}
+
+void MainWindow::fileTreePaneModuleLoaded() {
+  if (fileTreePaneModule) {
+    printf("FileTreePane Module Found\n");
     /* register widgets
      */
-    UCDPWAB_plugin->init();
-    std::shared_ptr<QWidget> UCDPWAB_Widget = UCDPWAB_plugin->getWidget();
-    centralQWidgetPtrs.push_back(UCDPWAB_Widget);
-    /* register settings
+    fileTreePaneModule->init();
+    /* register setting deploy
      */
-    rapidjson::Document pluginRequest;
-    std::unordered_map<std::string,
-                       std::function<void(rapidjson::Value & data)>>
-        pluginCallbackMap;
-    UCDPWAB_plugin->registerSettings(pluginRequest, pluginCallbackMap);
-    settingsManagerObj.merge(pluginRequest, pluginCallbackMap);
-
-    // Plain text tree start
-    // Open resource file
-    QFile file(":menu/default.txt");
-    file.open(QIODevice::ReadOnly);
-    // Add to Tree
-    // UCDPWAB_plugin->treeSetPlainText(file.readAll());
-    // Close file
-    file.close();
+    std::shared_ptr<rapidjson::Document> moduleRequest =
+        std::make_shared<rapidjson::Document>();
+    std::shared_ptr<std::unordered_map<
+        std::string, std::function<void(std::shared_ptr<rapidjson::Document>)>>>
+        moduleCallbackMap = std::make_shared<std::unordered_map<
+            std::string,
+            std::function<void(std::shared_ptr<rapidjson::Document>)>>>();
+    fileTreePaneModule->registerSettings(moduleRequest, moduleCallbackMap);
+    settingsManagerPtr->merge(moduleRequest, moduleCallbackMap);
+    // Did all modules load yet?
+    modulesLoadedNum++;
+    if (modulesLoadedNum == modulesLoadedTotalNum) {
+      allModulesLoaded();
+    }
   }
+}
 
+void MainWindow::filesystemDatabaseModuleLoaded() {
+  // Did all modules load yet?
+  modulesLoadedNum++;
+  if (modulesLoadedNum == modulesLoadedTotalNum) {
+    allModulesLoaded();
+  }
+}
+
+void MainWindow::allModulesLoaded() {
   /* Get the settings
    */
-  settingsManagerObj.deployFile(SETTINGS_FILE);
-
-  /* find the layout in the centralWidget
-   * add the plugin widgets to the layout
-   */
-  printf("===== DEBUG: ATTEMPTING TO FIND CENTRAL... =====\n");
-  QList<QHBoxLayout *> widgetCentralWidgetList =
-      this->findChildren<QHBoxLayout *>("horizontalLayout",
-                                        Qt::FindChildrenRecursively);
-  if (!widgetCentralWidgetList.empty()) {
-    printf("===== DEBUG: CENTRAL FOUND =====\n");
-    //QHBoxLayout* centralLayout = widgetCentralWidgetList.at(0);
-    for (auto widgetPtr : centralQWidgetPtrs) {
-      widgetCentralWidgetList.at(0)->addWidget(widgetPtr.get());
-    }
-  }
-
-  // QTreeView specific
-  if(!centralQWidgetPtrs.empty()){
-      std::shared_ptr<QTreeView> test = std::dynamic_pointer_cast<QTreeView>(centralQWidgetPtrs[0]);
-      test->expandAll();
-      test->setColumnWidth(0, 200);
-  }
-
-  if (UCDPWAB_plugin) {
-      //UCDPWAB_plugin->loadBuildingInfo();
-  }
-}
-
-void MainWindow::on_actionEnergy_triggered() {
-  /*std::string webID =
-      "A0EbgZy4oKQ9kiBiZJTW7eugwC6-3Qzx_"
-      "5RGrBZiQlqSuWw2sDVYNIPR1YODsG1RUyETgVVRJTC1BRlxDRUZTXFVDREFWSVNcQl"
-      "VJTE"
-      "RJTkdTXEFDQURFTUlDIFNVUkdFIEJVSUxESU5HXEVMRUNUUklDSVRZfERFTUFORA";
-  std::filesystem::path streamHTTP =
-      "https://ucd-pi-iis.ou.ad3.ucdavis.edu/piwebapi/streams/";
-  std::filesystem::path electricityHTTP = streamHTTP / webID / "recorded";
-  rapidjson::Document resJSON_Doc =
-      PWA_UCD::HTTPS_GET_JSON(electricityHTTP.string());
-
-  if (resJSON_Doc.IsObject()) {
-    for (rapidjson::Value::ConstMemberIterator itr = resJSON_Doc.MemberBegin();
-         itr != resJSON_Doc.MemberEnd(); ++itr) {
-      PWA_UCD::printJSON_iterator(itr, 0);
-    }
-  }*/
-}
-
-void MainWindow::on_actionDiscover_triggered() {
-  /*std::string HTTP_request =
-      "https://ucd-pi-iis.ou.ad3.ucdavis.edu/piwebapi/dataservers/"
-      "F1DS9KoOKByvc0-uxyvoTV1UfQVVRJTC1QSS1Q/points";
-  rapidjson::Document resJSON_Doc = PWA_UCD::HTTPS_GET_JSON(HTTP_request);
-
-  if (resJSON_Doc.IsObject()) {
-    for (rapidjson::Value::ConstMemberIterator itr = resJSON_Doc.MemberBegin();
-         itr != resJSON_Doc.MemberEnd(); ++itr) {
-      PWA_UCD::printJSON_iterator(itr, 0);
-    }
-  }*/
-}
-
-void MainWindow::on_actionWater_triggered() {
-  /*std::string webID =
-      "F1DSAAAAAAAAAAAAAAAAEiCt5wVUNELVBJLUlJUy5PVS5BRDMuVUNEQVZJUy5FRFU";
-  std::filesystem::path streamHTTP =
-      "https://ucd-pi-iis.ou.ad3.ucdavis.edu/piwebapi/streams/";
-  std::filesystem::path electricityHTTP = streamHTTP / webID / "recorded";
-  rapidjson::Document resJSON_Doc =
-      PWA_UCD::HTTPS_GET_JSON(electricityHTTP.string());
-
-  if (resJSON_Doc.IsObject()) {
-    for (rapidjson::Value::ConstMemberIterator itr = resJSON_Doc.MemberBegin();
-         itr != resJSON_Doc.MemberEnd(); ++itr) {
-      PWA_UCD::printJSON_iterator(itr, 0);
-    }
-  }*/
-}
-
-void MainWindow::on_actionWiFi_triggered() {
-  /*
-    std::string inputURIString, outputFileString;
-  PWA_UCD::getSettingsFile(SETTINGS_FILE, inputURIString,outputFileString);
-  rapidjson::Document resJSON_Doc =
-      PWA_UCD::HTTPS_GET_JSON(inputURIString);
-  std::ofstream ofs(outputFileString.c_str());
-  if ( !ofs.is_open() )
-      {
-     printf("ERROR: output file not found: %s\n",outputFileString.c_str());
-        return ;
-      }
-
-       rapidjson::OStreamWrapper osw { ofs };
-       rapidjson::PrettyWriter< rapidjson::OStreamWrapper> writer2 { osw };
-      resJSON_Doc.Accept( writer2 );
-      */
-}
-
-void MainWindow::on_actionTemperature_triggered() {
-  // Open resource file
-  QFile file(":menu/default.txt");
-  file.open(QIODevice::ReadOnly);
-  // Add to Tree
-  // UCD_PWA_Data_Widget->treeAddPlainText(file.readAll());
-  // Close file
-  file.close();
+  settingsManagerPtr->deployFile(SETTINGS_FILE);
 }

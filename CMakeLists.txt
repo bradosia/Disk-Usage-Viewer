@@ -4,19 +4,8 @@ project(Disk-Usage-Viewer VERSION 1.0.0 LANGUAGES CXX)
 set(BIN_NAME Disk-Usage-Viewer)
 
 # Configurable Options
-set(BUILD_SHARED_LIBS ON)
-set(BUILD_STATIC_LIBS ON)
-
-# Automatically compile .ui to .h
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-set(QTDIR $ENV{QTDIR})
-
-# set(CMAKE_PREFIX_PATH ${QTDIR})
-# set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
+OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
+OPTION(BUILD_STATIC_LIBS "Build static libraries" ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,6 +15,18 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
 find_package(Qt5Widgets REQUIRED)
 find_package(Boost 1.56 REQUIRED COMPONENTS
              system filesystem)
+
+# TODO: Use Verdigris so no MOC needed
+# TODO: Explicitly call RCC tool in prebuild command
+# QT tools
+# Automatically compile .ui to .h
+# set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+# set(CMAKE_INCLUDE_CURRENT_DIR ON)
+# set(QTDIR $ENV{QTDIR})
+# set(CMAKE_PREFIX_PATH ${QTDIR})
+# set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
 include_directories(
   third_party/rapidjson/include/
@@ -52,11 +53,11 @@ set(SOURCES ${SOURCES}
 
   src/UI/Application.hpp
   src/UI/MainWindow.hpp
+  src/UI/ui_main.hpp
   src/core/config.hpp
 )
 
 set(RESOURCES ${RESOURCES}
-  src/UI/main.ui
   resources/icons_file.qrc
 )
 
