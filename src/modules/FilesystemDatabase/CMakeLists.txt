@@ -10,7 +10,7 @@ set(SOURCES
   core/FilesystemFileTable.cpp
   core/FilesystemSignal.cpp
   #core/FilesystemSignalApple.cpp
-  core/FilesystemSignalPosix.cpp
+  #core/FilesystemSignalPosix.cpp
   #core/FilesystemSignalWin.cpp
 )
 
@@ -24,7 +24,7 @@ set(HEADERS
   core/FilesystemSignal.hpp
   core/FilesystemSignalBase.hpp
   #core/FilesystemSignalApple.hpp
-  core/FilesystemSignalPosix.hpp
+  #core/FilesystemSignalPosix.hpp
   #core/FilesystemSignalWin.hpp
 )
 
