@@ -1,6 +1,7 @@
 /build/
 /resources/settings1.json
 /resources/settings3.json
+CMakeLists.txt.user
 
 
 # Prerequisites
