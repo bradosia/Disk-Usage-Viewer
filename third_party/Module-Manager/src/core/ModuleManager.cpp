@@ -6,19 +6,8 @@
  * @brief Manages shared library plugins
  */
 
+// Local Project
 #include "ModuleManager.hpp"
-
-// c++17
-#include <filesystem>
-#include <iostream>
-#include <memory>
-#include <string>
-
-/* boost 1.72.0
- * License: Boost Software License (similar to BSD and MIT)
- */
-#include <boost/dll/import.hpp> // for import_alias
-#include <boost/shared_ptr.hpp>
 
 namespace bradosia {
 
