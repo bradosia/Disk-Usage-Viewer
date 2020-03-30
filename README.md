@@ -25,4 +25,5 @@ cd Disk-Usage-Viewer
 mkdir build
 cd build
 cmake -G "Unix Makefiles" ..
+make
 ```
