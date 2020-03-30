@@ -77,10 +77,15 @@ public:
     for (auto &p :
          boost::filesystem::recursive_directory_iterator(directoryPathStr)) {
       std::cout << "MODULE: File Found " << p.path() << "\n";
+      std::cout << "path extension " << p.path().extension().string() << "\n";
+      std::string pathStr = p.path().string();
+      /* On linux the dynamic library extensions are libMyLibrary.so.1.0.0
+       * Thus, we use find instead of substr matching
+       */
       if (boost::filesystem::is_regular_file(p) &&
-          (p.path().extension().string().substr(0, 4) == ".dll" ||
-           p.path().extension().string().substr(0, 6) == ".dylib" ||
-           p.path().extension().string().substr(0, 3) == ".so")) {
+          (pathStr.find(".dll") != std::string::npos ||
+           pathStr.find(".dylib") != std::string::npos ||
+           pathStr.find(".so") != std::string::npos)) {
         for (auto pairs : interfaceMap) {
           pairs.second->addPath(p.path());
         }
