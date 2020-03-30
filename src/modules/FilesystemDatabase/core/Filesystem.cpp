@@ -19,9 +19,14 @@ void traverse(
   directoryQueue.push(pathInitial);
   while (!directoryQueue.empty()) {
     try {
-      for (auto &p : boost::filesystem::directory_iterator(
-               directoryQueue.front(),
-               boost::filesystem::directory_options::skip_permission_denied)) {
+      /* As of 2020-03-30
+       * Highest version of boost on ubuntu is 1.65.1.0ubuntu1
+       * Highest version of QT on ubuntu is 5.9.5+dfsg-0ubuntu2.5
+       * boost::filesystem::directory_options::skip_permission_denied is for
+       * boost 1.72 so we must wait for ubuntu to update
+       */
+      for (auto &p :
+           boost::filesystem::directory_iterator(directoryQueue.front())) {
         if (boost::filesystem::is_directory(p)) {
           directoryQueue.push(p);
         }
