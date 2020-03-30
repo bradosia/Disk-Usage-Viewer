@@ -79,6 +79,10 @@ elseif(UNIX)
         uuid
 
         pthread
+        glib-2.0
+        gthread-2.0
+        dl
+        m
     )
 endif()
 

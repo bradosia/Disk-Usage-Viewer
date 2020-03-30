@@ -13,9 +13,6 @@
 #include <thread>
 #include <unordered_map>
 
-// Boost
-#include <boost/signals2.hpp>
-
 // Local Project
 #include "FilesystemSignalBase.hpp"
 
