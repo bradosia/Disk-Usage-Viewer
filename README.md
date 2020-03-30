@@ -27,3 +27,7 @@ cd build
 cmake -G "Unix Makefiles" ..
 make
 ```
+
+## Windows - MinGW
+
+## Windows - MSVC
