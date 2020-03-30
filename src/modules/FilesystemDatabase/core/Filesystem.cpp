@@ -13,27 +13,27 @@ namespace FSDB {
 namespace filesystem {
 
 void traverse(
-    std::filesystem::path pathInitial,
+    boost::filesystem::path pathInitial,
     std::shared_ptr<std::unordered_map<std::wstring, bool>> visitedPtr) {
-  std::queue<std::filesystem::path> directoryQueue;
+  std::queue<boost::filesystem::path> directoryQueue;
   directoryQueue.push(pathInitial);
   while (!directoryQueue.empty()) {
     try {
-      for (auto &p : std::filesystem::directory_iterator(
+      for (auto &p : boost::filesystem::directory_iterator(
                directoryQueue.front(),
-               std::filesystem::directory_options::skip_permission_denied)) {
-        if (p.is_directory()) {
+               boost::filesystem::directory_options::skip_permission_denied)) {
+        if (boost::filesystem::is_directory(p)) {
           directoryQueue.push(p);
         }
         visitedPtr->insert({p.path().wstring(), false});
-        #if TRAVERSE_DEBUG
+#if TRAVERSE_DEBUG
         std::cout << p.path() << "\n";
-        #endif
+#endif
       }
     } catch (const std::exception &e) {
-      #if TRAVERSE_DEBUG
+#if TRAVERSE_DEBUG
       std::cout << e.what() << "\n";
-      #endif
+#endif
     }
     directoryQueue.pop();
   }

@@ -10,12 +10,16 @@
 #define FSDB_FILESYSTEM_H
 
 // C++
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <queue>
 #include <thread>
 #include <unordered_map>
+
+/* boost 1.72.0
+ * License: Boost Software License (similar to BSD and MIT)
+ */
+#include "boost/filesystem.hpp"
 
 namespace FSDB {
 namespace filesystem {
