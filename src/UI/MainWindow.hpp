@@ -30,7 +30,7 @@ class MainWindow : public QMainWindow {
 
 public:
   MainWindow(QWidget *parent = nullptr);
-  ~MainWindow(){
+  ~MainWindow(){ 
       for (auto widgetPtr : centralQWidgetPtrs) {
         widgetPtr->setParent(nullptr);
       }

@@ -23,11 +23,20 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 
-/* UI
+/* boost 1.72.0
+ * License: Boost Software License (similar to BSD and MIT)
+ */
+#include <boost/signals2.hpp>
+
+/* QT 5.13.2
+ * License: LGPLv3
  */
 #include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QVariant>
+
+// FilesystemDatabase Module
+#include "../../FilesystemDatabase/Interface.hpp"
 
 // Local Project
 #include "WidgetItemDelegate.hpp"
@@ -83,6 +92,14 @@ public:
   Qt::ItemFlags flags(const QModelIndex &index) const override;
   bool setData(const QModelIndex &index, const QVariant &value,
                int role = Qt::EditRole) override;
+  /* Custom methods
+   */
+  void setPath(std::string newPath);
+  void getData(std::shared_ptr<FSDB::filesystem::FileTableData> fileTableData);
+  // SIGNALS
+  std::shared_ptr<boost::signals2::signal<void(
+      std::string, std::function<void(std::shared_ptr<FSDB::filesystem::FileTableData>)>)>>
+      getDirectorySignal;
 
 private:
   /* Custom methods

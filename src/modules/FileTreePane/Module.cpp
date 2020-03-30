@@ -12,6 +12,9 @@
  */
 #include <rapidjson/prettywriter.h>
 
+// FilesystemDatabase Module
+#include "../FilesystemDatabase/Interface.hpp"
+
 // Local Project
 #include "Module.hpp"
 #include "UI/MainWidget.hpp"
@@ -21,10 +24,14 @@
  */
 namespace FileTreePane {
 
-ModuleExport::ModuleExport() {}
+ModuleExport::ModuleExport() {
+  getDirectorySignal = std::make_shared<boost::signals2::signal<void(
+      std::string, std::function<void(std::shared_ptr<FSDB::filesystem::FileTableData>)>)>>();
+}
 
 std::shared_ptr<QWidget> ModuleExport::getWidget() {
   treeModel = std::make_shared<WidgetModel>();
+  treeModel->getDirectorySignal = getDirectorySignal;
   filesystemItemDelegate = std::make_shared<WidgetItemDelegate>();
   treeView = std::make_shared<MainWidget>();
   treeView->setModel(treeModel.get());
@@ -60,10 +67,17 @@ void ModuleExport::registerSettings(
   moduleRequest->SetObject();
   moduleRequest->AddMember("treeData", "treeSet",
                            moduleRequest->GetAllocator());
+  moduleRequest->AddMember("defaultDirectory", "defaultDirectoryCB",
+                           moduleRequest->GetAllocator());
+  /* Discovery:
+   * Callbacks don't need to be declared in the module interface
+   */
   moduleCallbackMap->insert(
       {"treeSet",
        std::bind(&ModuleExport::treeSetJSON, this, std::placeholders::_1)});
-
+  moduleCallbackMap->insert(
+      {"defaultDirectoryCB",
+       std::bind(&ModuleExport::pathSetByJSON, this, std::placeholders::_1)});
 #if SETTINGS_DEBUG
   rapidjson::StringBuffer buffer;
   rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
@@ -74,6 +88,21 @@ void ModuleExport::registerSettings(
     std::cout << "first:" << pairs.first << std::endl;
   }
 #endif
+}
+
+void ModuleExport::pathSetByJSON(std::shared_ptr<rapidjson::Document> data) {
+#if MODULE_EXPORT_PATH_SET_BY_JSON_DEBUG
+  std::cout << "ModuleExport::pathSetByJSON(GetType()=" << data->GetType()
+            << ")\n";
+#endif
+  if (data->IsString()) {
+#if MODULE_EXPORT_PATH_SET_BY_JSON_DEBUG
+    std::cout << "ModuleExport::pathSetByJSON(" << data->GetString() << ")\n";
+#endif
+    if (treeView) {
+      treeModel->setPath(data->GetString());
+    }
+  }
 }
 
 } // namespace FileTreePane

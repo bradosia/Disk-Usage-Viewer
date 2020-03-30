@@ -13,5 +13,6 @@
 
 #define DEBUG_JSON 1
 #define SETTINGS_FILE "settings.json"
+#define MAIN_WINDOW_DEBUG 1
 
 #endif // APPLICATION_CONFIG_H

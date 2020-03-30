@@ -9,7 +9,9 @@
 #ifndef FILE_TREE_PANE_MAIN_WIDGET_H
 #define FILE_TREE_PANE_MAIN_WIDGET_H
 
-// QT5
+/* QT 5.13.2
+ * License: LGPLv3
+ */
 #include <QWidget>
 #include <QTreeView>
 

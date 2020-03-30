@@ -21,7 +21,8 @@
 #include <thread>
 #include <unordered_map>
 
-/* Boost
+/* boost 1.72.0
+ * License: Boost Software License (similar to BSD and MIT)
  */
 #include <boost/config.hpp> // for BOOST_SYMBOL_EXPORT
 
@@ -76,6 +77,9 @@ public:
                    std::shared_ptr<std::unordered_map<
                        std::string, std::function<void(std::shared_ptr<rapidjson::Document>)>>>
                        moduleCallbackMap);
+  void pathSetByJSON(std::shared_ptr<rapidjson::Document> data);
+
+
 };
 
 // Exporting `my_namespace::module` variable with alias name `module`

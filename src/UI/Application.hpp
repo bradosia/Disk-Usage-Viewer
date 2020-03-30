@@ -14,7 +14,9 @@
 // c++
 #include <memory>
 
-// QT
+/* QT 5.13.2-1
+ * License: LGPLv3
+ */
 #include <QApplication>
 
 // MainWindow

@@ -10,7 +10,9 @@
 // C++
 #include <thread>
 
-// QT5
+/* QT 5.13.2-1
+ * License: LGPLv3
+ */
 #include <QTreeView>
 
 // Local Project
@@ -37,7 +39,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   loadModulesThread.join();
 
   // TODO: Thread these
-  fileTreePaneWidget = fileTreePaneModule->getWidget();
+  if(fileTreePaneModule){
+      fileTreePaneWidget = fileTreePaneModule->getWidget();
+      // needed to prevent crashing on program exit
+      centralQWidgetPtrs.push_back(fileTreePaneWidget);
+  }
   filesystemDatabaseModuleLoaded();
   fileTreePaneModuleLoaded();
 
@@ -52,6 +58,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 }
 
 void MainWindow::loadModules() {
+#if MAIN_WINDOW_DEBUG
+  std::cout << "MainWindow::loadModules() begin.\n";
+#endif
   settingsManagerPtr = std::make_shared<bradosia::SettingsManager>();
   /* Module Load
    */
@@ -94,6 +103,23 @@ void MainWindow::fileTreePaneModuleLoaded() {
 }
 
 void MainWindow::filesystemDatabaseModuleLoaded() {
+    if(filesystemDatabaseModule){
+        printf("FilesystemDatabase Module Found\n");
+        /* register widgets
+         */
+        filesystemDatabaseModule->init();
+        /* register setting deploy
+         */
+        std::shared_ptr<rapidjson::Document> moduleRequest =
+            std::make_shared<rapidjson::Document>();
+        std::shared_ptr<std::unordered_map<
+            std::string, std::function<void(std::shared_ptr<rapidjson::Document>)>>>
+            moduleCallbackMap = std::make_shared<std::unordered_map<
+                std::string,
+                std::function<void(std::shared_ptr<rapidjson::Document>)>>>();
+        filesystemDatabaseModule->registerSettings(moduleRequest, moduleCallbackMap);
+        settingsManagerPtr->merge(moduleRequest, moduleCallbackMap);
+    }
   // Did all modules load yet?
   modulesLoadedNum++;
   if (modulesLoadedNum == modulesLoadedTotalNum) {
@@ -102,6 +128,11 @@ void MainWindow::filesystemDatabaseModuleLoaded() {
 }
 
 void MainWindow::allModulesLoaded() {
+  /* SIGNALS AND SLOTS HOOKUP
+   */
+  fileTreePaneModule->getDirectorySignal->connect(std::bind(
+      &FSDB::ModuleInterface::getDirectorySlot, filesystemDatabaseModule,
+      std::placeholders::_1, std::placeholders::_2));
   /* Get the settings
    */
   settingsManagerPtr->deployFile(SETTINGS_FILE);

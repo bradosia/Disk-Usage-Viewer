@@ -11,6 +11,9 @@
 #ifndef UI_MAIN_H
 #define UI_MAIN_H
 
+/* QT 5.13.2-1
+ * License: LGPLv3
+ */
 #include <QtCore/QVariant>
 #include <QtGui/QIcon>
 #include <QtWidgets/QAction>

@@ -14,7 +14,9 @@
   https://code.qt.io/cgit/qt/qtbase.git/tree/examples/widgets/itemviews/stardelegate/main.cpp?h=5.14
 */
 
-// QT
+/* QT 5.13.2
+ * License: LGPLv3
+ */
 #include <QStringList>
 
 // Local Project
@@ -133,7 +135,7 @@ void WidgetModel::setupModelData(std::shared_ptr<rapidjson::Value> name,
       for (rapidjson::SizeType i = 0; i < n; i++) {
         std::string elementStr;
         elementStr.append("element(").append(std::to_string(i)).append(")");
-        rapidjson::Value *elementName;
+        rapidjson::Value *elementName = new rapidjson::Value();
         elementName->SetString(elementStr.c_str(), elementStr.length());
         valueQueue.push({elementName, &((*value)[i]), parentArray});
       }
@@ -270,6 +272,9 @@ int WidgetModel::rowCount(const QModelIndex &parent) const {
 
 bool WidgetModel::setData(const QModelIndex &index, const QVariant &value,
                           int role) {
+  if (role) {
+    // TODO
+  }
   WidgetItem *item = static_cast<WidgetItem *>(index.internalPointer());
   item->setData(index.column(), value);
   return true;
@@ -282,6 +287,18 @@ Qt::DropActions WidgetModel::supportedDropActions() const {
 bool WidgetModel::removeRows(int row, int count, const QModelIndex &parent) {
   WidgetItem *parentItem = static_cast<WidgetItem *>(parent.internalPointer());
   parentItem->removeChild(row, count);
+  return true;
+}
+
+void WidgetModel::setPath(std::string newPath) {
+  std::cout << "WidgetModel::setPath(" << newPath << ")\n";
+  (*getDirectorySignal)(
+      newPath, std::bind(&WidgetModel::getData, this, std::placeholders::_1));
+}
+
+void WidgetModel::getData(
+    std::shared_ptr<FSDB::filesystem::FileTableData> fileTableData) {
+  std::cout << "row 0 pathId=" << fileTableData->getRow(0)->pathId << "\n";
 }
 
 } // namespace FileTreePane

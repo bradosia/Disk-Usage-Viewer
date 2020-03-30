@@ -20,7 +20,11 @@
 namespace FSDB {
 namespace filesystem {
 
-//KNOWNFOLDERID: FOLDERID_ProgramData
+/* Idea: In windows, use the ProgramData folder to save data
+ * KNOWNFOLDERID: FOLDERID_ProgramData
+ * Edit: It is better to keep the data in the same folder as the binary
+ * to reduce fragmenting of files for easy uninstallation
+ */
 
 void traverse(
     std::filesystem::path pathInitial,

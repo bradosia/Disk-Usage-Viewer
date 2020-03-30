@@ -6,9 +6,12 @@
  * @brief QT5 Widget for viewing a file tree
  */
 
- #ifndef FILE_TREE_PANE_ITEM_H
+#ifndef FILE_TREE_PANE_ITEM_H
 #define FILE_TREE_PANE_ITEM_H
 
+/* QT 5.13.2
+ * License: LGPLv3
+ */
 #include <QComboBox>
 #include <QStyledItemDelegate>
 #include <QVariant>

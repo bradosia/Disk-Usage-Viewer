@@ -12,6 +12,7 @@
 // c++17
 #include <functional>
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 /* rapidjson v1.1 (2016-8-25)
@@ -20,6 +21,9 @@
  */
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
+
+// Local Project
+#include "core/FilesystemFileTableData.hpp"
 
 /*
  * FSDB
@@ -32,7 +36,14 @@ public:
   virtual void registerSettings(
       std::shared_ptr<rapidjson::Document>,
       std::shared_ptr<std::unordered_map<
-          std::string, std::function<void(std::shared_ptr<rapidjson::Document>)>>>) = 0;
+          std::string,
+          std::function<void(std::shared_ptr<rapidjson::Document>)>>>) = 0;
+  /* Must be virtual or the linker compainsD
+   */
+  virtual void getDirectorySlot(
+      std::string,
+      std::function<void(std::shared_ptr<filesystem::FileTableData>)>) = 0;
+  virtual int newModel() = 0;
 };
 
 } // namespace FSDB

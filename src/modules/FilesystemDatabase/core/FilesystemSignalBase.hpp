@@ -14,7 +14,9 @@
 #include <string>
 #include <memory>
 
-// Boost
+/* boost 1.72.0
+ * License: Boost Software License (similar to BSD and MIT)
+ */
 #include <boost/signals2.hpp>
 
 namespace FSDB {

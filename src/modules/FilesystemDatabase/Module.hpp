@@ -21,7 +21,8 @@
 #include <thread>
 #include <unordered_map>
 
-/* Boost
+/* boost 1.72.0
+ * License: Boost Software License (similar to BSD and MIT)
  */
 #include <boost/config.hpp> // for BOOST_SYMBOL_EXPORT
 
@@ -39,6 +40,7 @@
 // Local Project
 #include "Interface.hpp"
 #include "core/Filesystem.hpp"
+#include "core/FilesystemFileTable.hpp"
 #include "core/FilesystemSignal.hpp"
 #include "core/config.hpp"
 
@@ -54,17 +56,25 @@ namespace FSDB {
  */
 class ModuleExport : public ModuleInterface {
 private:
+  std::shared_ptr<filesystem::FileTable> fileTable;
+  int fileModelMapIncrementId = 0;
+  std::unordered_map<int, std::shared_ptr<filesystem::FileModel>> fileModelMap;
+
 public:
   ModuleExport();
   ~ModuleExport(){};
 
   void init() { printf("Filesystem Database Module: init()\n"); }
-  void
-  registerSettings(std::shared_ptr<rapidjson::Document> moduleRequest,
-                   std::shared_ptr<std::unordered_map<
-                       std::string, std::function<void(std::shared_ptr<rapidjson::Document>)>>>
-                       moduleCallbackMap);
+  void registerSettings(
+      std::shared_ptr<rapidjson::Document> moduleRequest,
+      std::shared_ptr<std::unordered_map<
+          std::string,
+          std::function<void(std::shared_ptr<rapidjson::Document>)>>>
+          moduleCallbackMap);
   void setSettings(std::shared_ptr<rapidjson::Value> data);
+  void getDirectorySlot(std::string,
+                        std::function<void(std::shared_ptr<filesystem::FileTableData>)>);
+  int newModel();
 };
 
 // Exporting `my_namespace::module` variable with alias name `module`

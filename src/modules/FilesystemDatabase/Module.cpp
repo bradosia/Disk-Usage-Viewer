@@ -20,12 +20,16 @@
  */
 namespace FSDB {
 
-ModuleExport::ModuleExport() {}
+ModuleExport::ModuleExport() {
+  fileTable = std::make_shared<filesystem::FileTable>();
+  fileTable->open();
+  fileTable->createTable();
+}
 
 void ModuleExport::registerSettings(
     std::shared_ptr<rapidjson::Document> moduleRequest,
-    std::shared_ptr<std::unordered_map<std::string,
-                                       std::function<void(std::shared_ptr<rapidjson::Document>)>>>
+    std::shared_ptr<std::unordered_map<
+        std::string, std::function<void(std::shared_ptr<rapidjson::Document>)>>>
         moduleCallbackMap) {
   moduleRequest->SetObject();
   moduleRequest->AddMember("FilesystemDatabase", "FilesystemDatabaseCB",
@@ -40,8 +44,36 @@ void ModuleExport::setSettings(std::shared_ptr<rapidjson::Value> data) {
   rapidjson::StringBuffer buffer;
   rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
   data->Accept(writer);
-  std::cout << "treeSetJSON() data:\n" << buffer.GetString() << std::endl;
+  std::cout << "FSDB::ModuleExport::setSettings:\n"
+            << buffer.GetString() << std::endl;
 #endif
+  if (data->IsObject()) {
+    // setDatabaseFileName
+    auto result = data->FindMember("file_database_file_name");
+    if (result != data->MemberEnd()) {
+      if (result->value.IsString()) {
+        fileTable->setDatabaseFileName(result->value.GetString());
+      }
+    }
+    // insertDatabaseByJson
+    auto result2 = data->FindMember("insert_database");
+    if (result2 != data->MemberEnd()) {
+      fileTable->insertDatabaseByJson(result2->value);
+    }
+  }
+}
+
+void ModuleExport::getDirectorySlot(
+    std::string pathStr,
+    std::function<void(std::shared_ptr<filesystem::FileTableData>)> callback) {
+  std::cout << "FSDB::ModuleExport::getDirectorySlot(" << pathStr << ")\n";
+  fileTable->getData(pathStr, callback);
+}
+
+int ModuleExport::newModel() {
+  ModuleExport::fileModelMap.insert(
+      {fileModelMapIncrementId, std::make_shared<filesystem::FileModel>()});
+  return fileModelMapIncrementId++;
 }
 
 } // namespace FSDB

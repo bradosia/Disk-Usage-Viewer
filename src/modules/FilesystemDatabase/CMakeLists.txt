@@ -7,6 +7,7 @@ set(lib_base_name FilesystemDatabase)
 set(SOURCES
   Module.cpp
   core/Filesystem.cpp
+  core/FilesystemFileTable.cpp
   core/FilesystemSignal.cpp
   #core/FilesystemSignalApple.cpp
   #core/FilesystemSignalPosix.cpp
@@ -18,6 +19,8 @@ set(HEADERS
   Interface.hpp
   core/config.hpp
   core/Filesystem.hpp
+  core/FilesystemFileTable.hpp
+  core/FilesystemFileTableData.hpp
   core/FilesystemSignal.hpp
   core/FilesystemSignalBase.hpp
   #core/FilesystemSignalApple.hpp
