@@ -28,57 +28,48 @@ set(STATIC_COMPILE_DEFINITIONS
   -DSTATIC_LIBRARY
 )
 
-set(SHARED_LINK_LIBRARIES
-  Qt5::Widgets
-
-  # OS Libraries
-  z
-  windowscodecs
-  stdc++
-  gcc
-  opengl32
-  gdi32
-  comdlg32
-  oleaut32
-  imm32
-  winmm
-  winspool
-  kernel32
-  user32
-  shell32
-  uuid
-  ole32
-  advapi32
-  ws2_32
-  mingw32
-  rpcrt4
+set(LIBRARIES ${LIBRARIES}
+    # QT5
+    Qt5::Widgets
 )
 
-set(STATIC_LINK_LIBRARIES
-  Qt5::Widgets
+if(WIN32)
+    set(LIBRARIES ${LIBRARIES}
+        # Windows Libraries
+        z
+        stdc++
+        gcc
+        uuid
 
-  # OS Libraries
-  z
-  windowscodecs
-  stdc++
-  gcc
-  opengl32
-  gdi32
-  comdlg32
-  oleaut32
-  imm32
-  winmm
-  winspool
-  kernel32
-  user32
-  shell32
-  uuid
-  ole32
-  advapi32
-  ws2_32
-  mingw32
-  rpcrt4
-)
+        windowscodecs
+        opengl32
+        gdi32
+        comdlg32
+        oleaut32
+        imm32
+        winmm
+        winspool
+        kernel32
+        user32
+        shell32
+        ole32
+        advapi32
+        ws2_32
+        mingw32
+        rpcrt4
+    )
+elseif(UNIX)
+    set(LIBRARIES ${LIBRARIES}
+        # Windows Libraries
+        z
+        stdc++
+        gcc
+        uuid
+    )
+endif()
+
+set(SHARED_LINK_LIBRARIES ${LIBRARIES})
+set(STATIC_LINK_LIBRARIES ${LIBRARIES})
 
 set(CMAKE_CXX_STANDARD 17)
 

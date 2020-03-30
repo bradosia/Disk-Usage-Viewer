@@ -36,67 +36,53 @@ set(STATIC_COMPILE_DEFINITIONS
   -DSTATIC_LIBRARY
 )
 
-set(SHARED_LINK_LIBRARIES
-  # sqlite 3
-  sqlite3
+set(LIBRARIES ${LIBRARIES}
+    # sqlite 3
+    sqlite3
 
-  # boost::filesystem
-  boost_system-mt
-  boost_filesystem-mt
-
-  # OS Libraries
-  z
-  windowscodecs
-  stdc++
-  gcc
-  opengl32
-  gdi32
-  comdlg32
-  oleaut32
-  imm32
-  winmm
-  winspool
-  kernel32
-  user32
-  shell32
-  uuid
-  ole32
-  advapi32
-  ws2_32
-  mingw32
-  rpcrt4
+    # Boost
+    Boost::system
+    Boost::filesystem
 )
 
-set(STATIC_LINK_LIBRARIES
-  # sqlite 3
-  sqlite3
+if(WIN32)
+    set(LIBRARIES ${LIBRARIES}
+        # Windows Libraries
+        z
+        stdc++
+        gcc
+        uuid
 
-  # boost::filesystem
-  boost_system
-  boost_filesystem
+        windowscodecs
+        opengl32
+        gdi32
+        comdlg32
+        oleaut32
+        imm32
+        winmm
+        winspool
+        kernel32
+        user32
+        shell32
+        ole32
+        advapi32
+        ws2_32
+        mingw32
+        rpcrt4
+    )
+elseif(UNIX)
+    set(LIBRARIES ${LIBRARIES}
+        # Windows Libraries
+        z
+        stdc++
+        gcc
+        uuid
+    )
+endif()
 
-  # OS Libraries
-  z
-  windowscodecs
-  stdc++
-  gcc
-  opengl32
-  gdi32
-  comdlg32
-  oleaut32
-  imm32
-  winmm
-  winspool
-  kernel32
-  user32
-  shell32
-  uuid
-  ole32
-  advapi32
-  ws2_32
-  mingw32
-  rpcrt4
-)
+
+set(SHARED_LINK_LIBRARIES ${LIBRARIES})
+set(STATIC_LINK_LIBRARIES ${LIBRARIES})
 
 set(CMAKE_CXX_STANDARD 17)
 

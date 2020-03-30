@@ -63,43 +63,51 @@ set(RESOURCES ${RESOURCES}
 
 add_executable(${BIN_NAME} ${SOURCES} ${RESOURCES})
 
-target_link_libraries(${BIN_NAME} PRIVATE
+set(LIBRARIES ${LIBRARIES}
   # QT5
   Qt5::Widgets
 
   # Boost
   Boost::system
   Boost::filesystem
-
-  # bradosia
-  ModuleManager
-  SettingsManager
-
-  # std::filesystem
-  stdc++fs
-
-  # OS Libraries
-  z
-  windowscodecs
-  stdc++
-  gcc
-  opengl32
-  gdi32
-  comdlg32
-  oleaut32
-  imm32
-  winmm
-  winspool
-  kernel32
-  user32
-  shell32
-  uuid
-  ole32
-  advapi32
-  ws2_32
-  mingw32
-  rpcrt4
 )
+
+if(WIN32)
+    set(LIBRARIES ${LIBRARIES}
+        # Windows Libraries
+        z
+        stdc++
+        gcc
+        uuid
+
+        windowscodecs
+        opengl32
+        gdi32
+        comdlg32
+        oleaut32
+        imm32
+        winmm
+        winspool
+        kernel32
+        user32
+        shell32
+        ole32
+        advapi32
+        ws2_32
+        mingw32
+        rpcrt4
+    )
+elseif(UNIX)
+    set(LIBRARIES ${LIBRARIES}
+        # Windows Libraries
+        z
+        stdc++
+        gcc
+        uuid
+    )
+endif()
+
+target_link_libraries(${BIN_NAME} PRIVATE ${LIBRARIES})
 
 # OS-Architecture specific libraries
 if(APPLE)
