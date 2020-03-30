@@ -70,6 +70,10 @@ set(LIBRARIES ${LIBRARIES}
   # Boost
   Boost::system
   Boost::filesystem
+
+  # bradosia
+  ModuleManager
+  SettingsManager
 )
 
 if(WIN32)
