@@ -76,10 +76,11 @@ public:
   void loadModules(std::string directoryPathStr) {
     for (auto &p :
          boost::filesystem::recursive_directory_iterator(directoryPathStr)) {
-      std::cout << "PLUGIN: File Found " << p.path() << "\n";
+      std::cout << "MODULE: File Found " << p.path() << "\n";
       if (boost::filesystem::is_regular_file(p) &&
-          (p.path().extension() == ".dll" || p.path().extension() == ".dylib" ||
-           p.path().extension() == ".so")) {
+          (p.path().extension().string().substr(0, 4) == ".dll" ||
+           p.path().extension().string().substr(0, 6) == ".dylib" ||
+           p.path().extension().string().substr(0, 3) == ".so")) {
         for (auto pairs : interfaceMap) {
           pairs.second->addPath(p.path());
         }
