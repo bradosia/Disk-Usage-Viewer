@@ -31,7 +31,7 @@ namespace filesystem {
  */
 
 void traverse(
-    std::filesystem::path pathInitial,
+    boost::filesystem::path pathInitial,
     std::shared_ptr<std::unordered_map<std::wstring, bool>> visitedPtr);
 
 } // namespace filesystem
