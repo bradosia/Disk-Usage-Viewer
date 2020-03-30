@@ -72,11 +72,13 @@ if(WIN32)
     )
 elseif(UNIX)
     set(LIBRARIES ${LIBRARIES}
-        # Windows Libraries
+        # Unix Libraries
         z
         stdc++
         gcc
         uuid
+
+        pthread
     )
 endif()
 
