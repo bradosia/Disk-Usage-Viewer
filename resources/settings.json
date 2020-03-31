@@ -41,6 +41,10 @@
   			"writeTimeLast" : 3,
   			"flags" : 1,
   		}
+  	],
+  	"watch_directories" : [
+  		"C:\\Users\\admin\\Desktop\\new_folder1\\boyyyy",
+  		"/home/ubuntu/test"
   	]
   }
 }

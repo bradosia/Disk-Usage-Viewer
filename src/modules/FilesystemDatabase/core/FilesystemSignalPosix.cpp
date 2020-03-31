@@ -67,8 +67,7 @@ void Signal::watch() {
         if (event->len) {
           std::unique_ptr<SignalEvent> sigEvent =
               std::make_unique<SignalEvent>();
-          std::string eventNameStr(event->name);
-          sigEvent->path = std::wstring(eventNameStr.begin(), eventNameStr.end());
+          sigEvent->path = std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(std::string(event->name));
           if (event->mask & IN_CREATE) {
             if (event->mask & IN_ISDIR) {
               sigEvent->type = signalEventType::dirCreate;
@@ -96,8 +95,7 @@ void Signal::watch() {
 bool Signal::addWatch(std::wstring pathNameWstr) {
   if (initError)
     return false;
-  std::string pathNameStr(pathNameWstr.begin(), pathNameWstr.end());
-  int wd = inotify_add_watch(fd, pathNameStr.c_str(), IN_ALL_EVENTS);
+  int wd = inotify_add_watch(fd, std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(pathNameWstr).c_str(), IN_ALL_EVENTS);
   wd_list.push_back(wd);
   return true;
 }

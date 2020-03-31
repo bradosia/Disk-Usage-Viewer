@@ -10,6 +10,8 @@
 #ifndef FSDB_FILESYSTEM_SIGNAL_CPP
 #define FSDB_FILESYSTEM_SIGNAL_CPP
 
+// C++
+#include <iostream>
 #include <memory>
 
 // local project
@@ -18,7 +20,25 @@
 namespace FSDB {
 namespace filesystem {
 
-Signal::Signal() { bufferSize = 1024 * sizeof(FILE_NOTIFY_INFORMATION); }
+/* Designing the signaling for Windows has many methods:
+ * This has a good outline of the common methods to using ReadDirectoryChangesW
+ * https://qualapps.blogspot.com/2010/05/understanding-readdirectorychangesw.html
+ * This code use the simple method
+ * ReadDirectoryChangesW is blocking a thread and
+ * reports its data using boost signals2
+ */
+Signal::Signal() {
+  /* this is pretty arbitrary since the file lengths are unknown
+   * Let's arbitraily hold at least 3 entries with a path length MAX_PATH
+   * sizeof(struct _FILE_NOTIFY_INFORMATION) = 16 bytes
+   * MAX_PATH=260 wchar_t = 520 bytes
+   * so each _FILE_NOTIFY_INFORMATION could be 16 + 520 = 436 bytes
+   * 3 of these = 1308 bytes
+   * In my testing I have never seen more than two events in one blocking read
+   * and that typically only happens for a file rename
+   */
+  bufferSize = 1308;
+}
 
 Signal::~Signal() {
   for (auto &handleIt : handleMap) {
@@ -29,24 +49,34 @@ Signal::~Signal() {
 }
 
 void Signal::watch(HANDLE fileHandle, std::shared_ptr<HandleInfo> handleInfo) {
+  /* A DWORD is 4 bytes or 32-bits
+   */
+  DWORD buffer[bufferSize];
+  unsigned int bufferBytes = bufferSize * 4;
   /* What will happen when the instance is deleted?
    */
   while (handleInfo->threadRunFlag) {
-    /* A DWORD is 4 bytes or 32-bits
-     */
+    // reset variables and buffer
     DWORD bytesRead = 0;
-    DWORD buffer[bufferSize];
     DWORD lpBytesReturned = 0;
+    DWORD *bufferPtr = buffer;
+    memset(buffer, 0, bufferBytes);
 
     // blocks until there is something to read
     bool flag = ReadDirectoryChangesW(
-        fileHandle, buffer, bufferSize * 4, TRUE,
+        fileHandle, buffer, bufferBytes, TRUE,
         FILE_NOTIFY_CHANGE_SECURITY | FILE_NOTIFY_CHANGE_CREATION |
             FILE_NOTIFY_CHANGE_LAST_ACCESS | FILE_NOTIFY_CHANGE_LAST_WRITE |
             FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_ATTRIBUTES |
             FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_FILE_NAME,
         &lpBytesReturned, NULL, nullptr);
 
+#if FILESYSTEM_SIGNAL_DEBUG
+    std::cout << "Signal::watch(" << fileHandle
+              << ") lpBytesReturned=" << lpBytesReturned
+              << " struct size=" << sizeof(struct _FILE_NOTIFY_INFORMATION)
+              << "\n";
+#endif
     /* checking for error
      */
     if (lpBytesReturned >= 0 && handleInfo->threadRunFlag) {
@@ -54,11 +84,13 @@ void Signal::watch(HANDLE fileHandle, std::shared_ptr<HandleInfo> handleInfo) {
        * change event one by one and process it accordingly.
        */
       while (bytesRead < lpBytesReturned) {
-        FILE_NOTIFY_INFORMATION *event = (FILE_NOTIFY_INFORMATION *)&buffer[bytesRead];
+        struct _FILE_NOTIFY_INFORMATION *event =
+            reinterpret_cast<struct _FILE_NOTIFY_INFORMATION *>(bufferPtr);
         if (event->FileNameLength) {
           std::shared_ptr<SignalEvent> sigEvent =
               std::make_unique<SignalEvent>();
-          sigEvent->path = std::wstring(event->FileName, event->FileNameLength);
+          sigEvent->path =
+              std::wstring(event->FileName, event->FileNameLength / 2);
           if (event->Action == FILE_ACTION_ADDED) {
             sigEvent->type = signalEventType::fileCreate;
           } else if (event->Action == FILE_ACTION_REMOVED) {
@@ -73,7 +105,17 @@ void Signal::watch(HANDLE fileHandle, std::shared_ptr<HandleInfo> handleInfo) {
           // signal
           (*sig)(sigEvent);
         }
-        bytesRead += ((DWORD)bufferSize + event->NextEntryOffset);
+        bufferPtr += event->NextEntryOffset / 4;
+        bytesRead += event->NextEntryOffset / 4;
+#if FILESYSTEM_SIGNAL_DEBUG
+        std::cout << "Signal::watch(" << fileHandle
+                  << ") NextEntryOffset=" << event->NextEntryOffset
+                  << " FileNameLength=" << event->FileNameLength << "\n";
+#endif
+        // A value of zero indicates that this is the last record.
+        if (event->NextEntryOffset == 0) {
+          break;
+        }
       }
     } else {
       // error
@@ -82,6 +124,9 @@ void Signal::watch(HANDLE fileHandle, std::shared_ptr<HandleInfo> handleInfo) {
 }
 
 bool Signal::addWatch(std::wstring pathName) {
+#if FILESYSTEM_SIGNAL_DEBUG
+  std::cout << "Signal::addWatch(" << toUTF8String(pathName) << ") start\n";
+#endif
   HANDLE fileHandle =
       CreateFileW(pathName.c_str(), FILE_LIST_DIRECTORY,
                   FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE, NULL,
@@ -89,7 +134,10 @@ bool Signal::addWatch(std::wstring pathName) {
   if (fileHandle == INVALID_HANDLE_VALUE) {
     return false;
   }
-
+#if FILESYSTEM_SIGNAL_DEBUG
+  std::cout << "Signal::addWatch(" << toUTF8String(pathName)
+            << ") WINAPI CreateFileW success\n";
+#endif
   std::shared_ptr<HandleInfo> handleInfo =
       std::make_shared<HandleInfo>(fileHandle, true);
   /* Each watch on a separate thread

@@ -10,8 +10,10 @@
 #define FSDB_FILESYSTEM_H
 
 // C++
+#include <codecvt>
 #include <fstream>
 #include <iostream>
+#include <locale> // wstring_convert
 #include <queue>
 #include <thread>
 #include <unordered_map>
@@ -33,6 +35,9 @@ namespace filesystem {
 void traverse(
     boost::filesystem::path pathInitial,
     std::shared_ptr<std::unordered_map<std::wstring, bool>> visitedPtr);
+std::string toUTF8String(std::wstring);
+// UT8 string to UTF16 wstring
+std::wstring toUTF16Wstring(std::string);
 
 } // namespace filesystem
 } // namespace FSDB

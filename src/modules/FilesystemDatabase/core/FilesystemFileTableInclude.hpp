@@ -6,8 +6,8 @@
  * @brief filesystem database and utilities
  */
 
-#ifndef FSDB_FILE_TABLE_DATA_H
-#define FSDB_FILE_TABLE_DATA_H
+#ifndef FSDB_FILE_TABLE_INCLUDE_H
+#define FSDB_FILE_TABLE_INCLUDE_H
 
 // C++
 #include <memory>
@@ -53,14 +53,7 @@ public:
   std::shared_ptr<FileTableRow> getRow(int row) { return table.at(row); }
 };
 
-class FileModel {
-public:
-  FileModel(){};
-  ~FileModel(){};
-  std::shared_ptr<FileTableData> rootTable;
-};
-
 } // namespace filesystem
 } // namespace FSDB
 
-#endif // FSDB_FILE_TABLE_DATA_H
+#endif // FSDB_FILE_TABLE_INCLUDE_H

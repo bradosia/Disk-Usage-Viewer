@@ -31,7 +31,7 @@ namespace filesystem {
  * POSIX: read(fd, buffer, EVENT_BUF_LEN);
  * WINAPI: WaitForMultipleObjects(2, dwChangeHandles, FALSE, INFINITE);
  */
-class Signal : SignalBase {
+class Signal : public SignalBase {
 private:
   int fd;
   std::vector<int> wd_list;

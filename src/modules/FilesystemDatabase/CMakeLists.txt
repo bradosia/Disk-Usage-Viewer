@@ -20,8 +20,10 @@ set(HEADERS
   core/config.hpp
   core/Filesystem.hpp
   core/FilesystemFileTable.hpp
-  core/FilesystemFileTableData.hpp
+  core/FilesystemFileTableModel.hpp
+  core/FilesystemFileTableInclude.hpp
   core/FilesystemSignal.hpp
+  core/FilesystemSignalInclude.hpp
   core/FilesystemSignalBase.hpp
   #core/FilesystemSignalApple.hpp
   #core/FilesystemSignalPosix.hpp

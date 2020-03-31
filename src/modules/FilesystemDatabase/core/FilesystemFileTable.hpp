@@ -40,7 +40,7 @@
 #include <sqlite3.h>
 
 // Local Project
-#include "FilesystemFileTableData.hpp"
+#include "FilesystemFileTableModel.hpp"
 
 namespace FSDB {
 namespace filesystem {

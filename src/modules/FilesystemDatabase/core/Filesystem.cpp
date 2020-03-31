@@ -44,5 +44,12 @@ void traverse(
   }
 }
 
+std::string toUTF8String(std::wstring wstr) {
+  return std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(wstr);
+}
+std::wstring toUTF16Wstring(std::string str) {
+  return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(str);
+}
+
 } // namespace filesystem
 } // namespace FSDB

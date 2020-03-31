@@ -39,10 +39,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   loadModulesThread.join();
 
   // TODO: Thread these
-  if(fileTreePaneModule){
-      fileTreePaneWidget = fileTreePaneModule->getWidget();
-      // needed to prevent crashing on program exit
-      centralQWidgetPtrs.push_back(fileTreePaneWidget);
+  if (fileTreePaneModule) {
+    fileTreePaneWidget = fileTreePaneModule->getWidget();
+    // needed to prevent crashing on program exit
+    centralQWidgetPtrs.push_back(fileTreePaneWidget);
   }
   filesystemDatabaseModuleLoaded();
   fileTreePaneModuleLoaded();
@@ -103,23 +103,24 @@ void MainWindow::fileTreePaneModuleLoaded() {
 }
 
 void MainWindow::filesystemDatabaseModuleLoaded() {
-    if(filesystemDatabaseModule){
-        printf("FilesystemDatabase Module Found\n");
-        /* register widgets
-         */
-        filesystemDatabaseModule->init();
-        /* register setting deploy
-         */
-        std::shared_ptr<rapidjson::Document> moduleRequest =
-            std::make_shared<rapidjson::Document>();
-        std::shared_ptr<std::unordered_map<
-            std::string, std::function<void(std::shared_ptr<rapidjson::Document>)>>>
-            moduleCallbackMap = std::make_shared<std::unordered_map<
-                std::string,
-                std::function<void(std::shared_ptr<rapidjson::Document>)>>>();
-        filesystemDatabaseModule->registerSettings(moduleRequest, moduleCallbackMap);
-        settingsManagerPtr->merge(moduleRequest, moduleCallbackMap);
-    }
+  if (filesystemDatabaseModule) {
+    printf("FilesystemDatabase Module Found\n");
+    /* register widgets
+     */
+    filesystemDatabaseModule->init();
+    /* register setting deploy
+     */
+    std::shared_ptr<rapidjson::Document> moduleRequest =
+        std::make_shared<rapidjson::Document>();
+    std::shared_ptr<std::unordered_map<
+        std::string, std::function<void(std::shared_ptr<rapidjson::Document>)>>>
+        moduleCallbackMap = std::make_shared<std::unordered_map<
+            std::string,
+            std::function<void(std::shared_ptr<rapidjson::Document>)>>>();
+    filesystemDatabaseModule->registerSettings(moduleRequest,
+                                               moduleCallbackMap);
+    settingsManagerPtr->merge(moduleRequest, moduleCallbackMap);
+  }
   // Did all modules load yet?
   modulesLoadedNum++;
   if (modulesLoadedNum == modulesLoadedTotalNum) {

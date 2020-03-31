@@ -28,7 +28,7 @@ namespace filesystem {
 /* FSDB::filesystem::Signal class
  *
  */
-class Signal : SignalBase {
+class Signal : public SignalBase {
 private:
   class HandleInfo {
   public:

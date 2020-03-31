@@ -19,6 +19,7 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <functional>
 
 /* boost 1.72.0
  * License: Boost Software License (similar to BSD and MIT)
@@ -58,6 +59,10 @@ private:
   std::shared_ptr<filesystem::FileTable> fileTable;
   int fileModelMapIncrementId = 0;
   std::unordered_map<int, std::shared_ptr<filesystem::FileModel>> fileModelMap;
+  int signalIncrementId = 0;
+  std::unordered_map<int, std::shared_ptr<filesystem::Signal>> signalMap;
+  int testSignalIncrementId = 0;
+  std::unordered_map<int, std::shared_ptr<filesystem::Signal>> testSignalMap;
 
 public:
   ModuleExport();
@@ -71,9 +76,19 @@ public:
           std::function<void(std::shared_ptr<rapidjson::Document>)>>>
           moduleCallbackMap);
   void setSettings(std::shared_ptr<rapidjson::Value> data);
-  void getDirectorySlot(std::string,
-                        std::function<void(std::shared_ptr<filesystem::FileTableData>)>);
+  void getDirectorySlot(
+      std::string,
+      std::function<void(std::shared_ptr<filesystem::FileTableData>)>);
   int newModel();
+  int newSignal();
+  bool
+  connectSignal(int signalId,
+                std::function<void(std::shared_ptr<filesystem::SignalEvent>)>
+                    signalCallback);
+  bool watchSignal(int signalId, std::wstring pathWstr);
+  bool watchSignal(int signalId, std::string pathStr);
+  void addTestSignals(rapidjson::Value &data);
+  void testSignalCallback(std::shared_ptr<FSDB::filesystem::SignalEvent> signalEventPtr);
 };
 
 // Exporting `my_namespace::module` variable with alias name `module`
