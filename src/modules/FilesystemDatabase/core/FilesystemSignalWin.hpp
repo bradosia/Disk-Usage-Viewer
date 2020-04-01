@@ -45,7 +45,7 @@ private:
 public:
   Signal();
   ~Signal();
-  void watch(HANDLE fileHandle, std::shared_ptr<HandleInfo> handleInfo);
+  void watch(HANDLE, std::shared_ptr<HandleInfo>, boost::filesystem::path);
   bool addWatch(std::wstring pathName);
 };
 

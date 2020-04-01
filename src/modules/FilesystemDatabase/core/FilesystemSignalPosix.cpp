@@ -50,6 +50,8 @@ void Signal::watch() {
   /* What will happen when the instance is deleted?
    */
   while (threadRunFlag) {
+    /* INOTIFY_EVENT_SIZE = 16
+     */
     int length, i = 0;
     char buffer[INOTIFY_EVENT_BUF_LEN];
 
@@ -68,10 +70,13 @@ void Signal::watch() {
        */
       while (i < length) {
         struct inotify_event *event = (struct inotify_event *)&buffer[i];
+        boost::filesystem::path watchPath(wdMap.at(event->wd));
+        boost::filesystem::path eventPath(std::string(event->name, event->len));
+        boost::filesystem::path eventFullPath(watchPath / eventPath);
         std::unique_ptr<SignalEvent> sigEvent = std::make_unique<SignalEvent>();
-        sigEvent->path = toUTF16Wstring(std::string(event->name, event->len));
+        sigEvent->path = eventFullPath.generic_wstring();
 #if FILESYSTEM_SIGNAL_DEBUG
-        std::cout << "Signal::watch(" << fd << ") path=" << std::string(event->name, event->len) << "\n";
+        std::cout << "Signal::watch(" << fd << ") path=" << eventFullPath.generic_string() << "\n";
 #endif
         if (event->mask & IN_CREATE) {
           if (event->mask & IN_ISDIR) {
@@ -102,9 +107,11 @@ void Signal::watch() {
 bool Signal::addWatch(std::wstring pathNameWstr) {
   if (initError)
     return false;
+  /* Only watches one directory deep
+   */
   int wd =
-      inotify_add_watch(fd, toUTF8String(pathNameWstr).c_str(), IN_ALL_EVENTS);
-  wd_list.push_back(wd);
+      inotify_add_watch(fd, boost::filesystem::path(pathNameWstr).string().c_str(), IN_ALL_EVENTS);
+  wdMap.insert({wd, boost::filesystem::path(pathNameWstr)});
   return true;
 }
 

@@ -48,7 +48,8 @@ Signal::~Signal() {
   }
 }
 
-void Signal::watch(HANDLE fileHandle, std::shared_ptr<HandleInfo> handleInfo) {
+void Signal::watch(HANDLE fileHandle, std::shared_ptr<HandleInfo> handleInfo,
+                   boost::filesystem::path watchPath) {
   /* A DWORD is 4 bytes or 32-bits
    */
   DWORD buffer[bufferSize];
@@ -86,9 +87,11 @@ void Signal::watch(HANDLE fileHandle, std::shared_ptr<HandleInfo> handleInfo) {
       while (bytesRead < lpBytesReturned) {
         struct _FILE_NOTIFY_INFORMATION *event =
             reinterpret_cast<struct _FILE_NOTIFY_INFORMATION *>(bufferPtr);
+        boost::filesystem::path eventPath(
+            std::wstring(event->FileName, event->FileNameLength / 2));
+        boost::filesystem::path eventFullPath(watchPath / eventPath);
         std::shared_ptr<SignalEvent> sigEvent = std::make_unique<SignalEvent>();
-        sigEvent->path =
-            std::wstring(event->FileName, event->FileNameLength / 2);
+        sigEvent->path = eventFullPath.generic_wstring();
         if (event->Action == FILE_ACTION_ADDED) {
           sigEvent->type = signalEventType::fileCreate;
         } else if (event->Action == FILE_ACTION_REMOVED) {
@@ -121,18 +124,19 @@ void Signal::watch(HANDLE fileHandle, std::shared_ptr<HandleInfo> handleInfo) {
 }
 
 bool Signal::addWatch(std::wstring pathName) {
+  boost::filesystem::path watchPath(pathName);
 #if FILESYSTEM_SIGNAL_DEBUG
-  std::cout << "Signal::addWatch(" << toUTF8String(pathName) << ") start\n";
+  std::cout << "Signal::addWatch(" << watchPath << ") start\n";
 #endif
   HANDLE fileHandle =
-      CreateFileW(pathName.c_str(), FILE_LIST_DIRECTORY,
+      CreateFileW(watchPath.wstring().c_str(), FILE_LIST_DIRECTORY,
                   FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE, NULL,
                   OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
   if (fileHandle == INVALID_HANDLE_VALUE) {
     return false;
   }
 #if FILESYSTEM_SIGNAL_DEBUG
-  std::cout << "Signal::addWatch(" << toUTF8String(pathName)
+  std::cout << "Signal::addWatch(" << watchPath
             << ") WINAPI CreateFileW success\n";
 #endif
   std::shared_ptr<HandleInfo> handleInfo =
@@ -140,7 +144,7 @@ bool Signal::addWatch(std::wstring pathName) {
   /* Each watch on a separate thread
    */
   std::shared_ptr<std::thread> watcherThread = std::make_shared<std::thread>(
-      &Signal::watch, this, fileHandle, handleInfo);
+      &Signal::watch, this, fileHandle, handleInfo, watchPath);
   watcherThread->detach();
 
   handleMap.insert({fileHandle, handleInfo});

@@ -10,6 +10,7 @@
 #define FSDB_FILESYSTEM_SIGNAL_NATIVE_H
 
 // C++
+#include <string>
 #include <thread>
 #include <unordered_map>
 
@@ -31,7 +32,7 @@ namespace filesystem {
 class Signal : public SignalBase {
 private:
   int fd;
-  std::vector<int> wd_list;
+  std::unordered_map<int, boost::filesystem::path> wdMap;
   bool threadRunFlag = false;
 
 public:
