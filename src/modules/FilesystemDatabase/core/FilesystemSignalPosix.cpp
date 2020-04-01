@@ -102,7 +102,7 @@ void Signal::watch() {
 bool Signal::addWatch(std::wstring pathNameWstr) {
   if (initError)
     return false;
-  int wd = inotify_add_watch(fd, toUTF8String(pathNameWstr), IN_ALL_EVENTS);
+  int wd = inotify_add_watch(fd, toUTF8String(pathNameWstr).c_str(), IN_ALL_EVENTS);
   wd_list.push_back(wd);
   return true;
 }

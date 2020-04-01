@@ -10,7 +10,7 @@ set(SOURCES
   core/FilesystemFileTable.cpp
   core/FilesystemSignal.cpp
   #core/FilesystemSignalApple.cpp
-  core/FilesystemSignalPosix.cpp
+  #core/FilesystemSignalPosix.cpp
   #core/FilesystemSignalWin.cpp
 )
 
