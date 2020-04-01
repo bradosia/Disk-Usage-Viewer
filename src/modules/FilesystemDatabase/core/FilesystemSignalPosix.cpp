@@ -39,8 +39,8 @@ Signal::Signal() {
 Signal::~Signal() {
   if (!initError) {
     threadRunFlag = false;
-    for (auto wd : wd_list) {
-      inotify_rm_watch(fd, wd);
+    for (auto wd : wdMap) {
+      inotify_rm_watch(fd, wd.first);
     }
     close(fd);
   }
