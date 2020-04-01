@@ -59,6 +59,10 @@ void Signal::watch() {
     /* checking for error
      */
     if (length >= 0 && threadRunFlag) {
+#if FILESYSTEM_SIGNAL_DEBUG
+      std::cout << "Signal::watch(" << fd << ") length=" << length
+                << " struct size=" << INOTIFY_EVENT_SIZE << "\n";
+#endif
       /* actually read return the list of change events happens. Here, read the
        * change event one by one and process it accordingly.
        */
@@ -67,7 +71,7 @@ void Signal::watch() {
         if (event->len) {
           std::unique_ptr<SignalEvent> sigEvent =
               std::make_unique<SignalEvent>();
-          sigEvent->path = std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(std::string(event->name));
+          sigEvent->path = toUTF16Wstring(std::string(event->name, event->len));
           if (event->mask & IN_CREATE) {
             if (event->mask & IN_ISDIR) {
               sigEvent->type = signalEventType::dirCreate;
@@ -84,6 +88,9 @@ void Signal::watch() {
           // signal
           (*sig)(std::move(sigEvent));
         }
+#if FILESYSTEM_SIGNAL_DEBUG
+        std::cout << "Signal::watch(" << fd << ") len=" << event->len << "\n";
+#endif
         i += INOTIFY_EVENT_SIZE + event->len;
       }
     } else {
@@ -95,7 +102,7 @@ void Signal::watch() {
 bool Signal::addWatch(std::wstring pathNameWstr) {
   if (initError)
     return false;
-  int wd = inotify_add_watch(fd, std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(pathNameWstr).c_str(), IN_ALL_EVENTS);
+  int wd = inotify_add_watch(fd, toUTF8String(pathNameWstr), IN_ALL_EVENTS);
   wd_list.push_back(wd);
   return true;
 }
