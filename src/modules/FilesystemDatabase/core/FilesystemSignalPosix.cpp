@@ -68,26 +68,26 @@ void Signal::watch() {
        */
       while (i < length) {
         struct inotify_event *event = (struct inotify_event *)&buffer[i];
-        if (event->len) {
-          std::unique_ptr<SignalEvent> sigEvent =
-              std::make_unique<SignalEvent>();
-          sigEvent->path = toUTF16Wstring(std::string(event->name, event->len));
-          if (event->mask & IN_CREATE) {
-            if (event->mask & IN_ISDIR) {
-              sigEvent->type = signalEventType::dirCreate;
-            } else {
-              sigEvent->type = signalEventType::fileCreate;
-            }
-          } else if (event->mask & IN_DELETE) {
-            if (event->mask & IN_ISDIR) {
-              sigEvent->type = signalEventType::dirDelete;
-            } else {
-              sigEvent->type = signalEventType::fileDelete;
-            }
+        std::unique_ptr<SignalEvent> sigEvent = std::make_unique<SignalEvent>();
+        sigEvent->path = toUTF16Wstring(std::string(event->name, event->len));
+#if FILESYSTEM_SIGNAL_DEBUG
+        std::cout << "Signal::watch(" << fd << ") path=" << std::string(event->name, event->len) << "\n";
+#endif
+        if (event->mask & IN_CREATE) {
+          if (event->mask & IN_ISDIR) {
+            sigEvent->type = signalEventType::dirCreate;
+          } else {
+            sigEvent->type = signalEventType::fileCreate;
           }
-          // signal
-          (*sig)(std::move(sigEvent));
+        } else if (event->mask & IN_DELETE) {
+          if (event->mask & IN_ISDIR) {
+            sigEvent->type = signalEventType::dirDelete;
+          } else {
+            sigEvent->type = signalEventType::fileDelete;
+          }
         }
+        // signal
+        (*sig)(std::move(sigEvent));
 #if FILESYSTEM_SIGNAL_DEBUG
         std::cout << "Signal::watch(" << fd << ") len=" << event->len << "\n";
 #endif
@@ -102,7 +102,8 @@ void Signal::watch() {
 bool Signal::addWatch(std::wstring pathNameWstr) {
   if (initError)
     return false;
-  int wd = inotify_add_watch(fd, toUTF8String(pathNameWstr).c_str(), IN_ALL_EVENTS);
+  int wd =
+      inotify_add_watch(fd, toUTF8String(pathNameWstr).c_str(), IN_ALL_EVENTS);
   wd_list.push_back(wd);
   return true;
 }

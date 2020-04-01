@@ -86,27 +86,22 @@ void Signal::watch(HANDLE fileHandle, std::shared_ptr<HandleInfo> handleInfo) {
       while (bytesRead < lpBytesReturned) {
         struct _FILE_NOTIFY_INFORMATION *event =
             reinterpret_cast<struct _FILE_NOTIFY_INFORMATION *>(bufferPtr);
-        if (event->FileNameLength) {
-          std::shared_ptr<SignalEvent> sigEvent =
-              std::make_unique<SignalEvent>();
-          sigEvent->path =
-              std::wstring(event->FileName, event->FileNameLength / 2);
-          if (event->Action == FILE_ACTION_ADDED) {
-            sigEvent->type = signalEventType::fileCreate;
-          } else if (event->Action == FILE_ACTION_REMOVED) {
-            sigEvent->type = signalEventType::fileDelete;
-          } else if (event->Action == FILE_ACTION_MODIFIED) {
-            sigEvent->type = signalEventType::fileDataChange;
-          } else if (event->Action == FILE_ACTION_RENAMED_OLD_NAME) {
-            sigEvent->type = signalEventType::fileNameChange;
-          } else if (event->Action == FILE_ACTION_RENAMED_NEW_NAME) {
-            sigEvent->type = signalEventType::fileNameChange;
-          }
-          // signal
-          (*sig)(sigEvent);
+        std::shared_ptr<SignalEvent> sigEvent = std::make_unique<SignalEvent>();
+        sigEvent->path =
+            std::wstring(event->FileName, event->FileNameLength / 2);
+        if (event->Action == FILE_ACTION_ADDED) {
+          sigEvent->type = signalEventType::fileCreate;
+        } else if (event->Action == FILE_ACTION_REMOVED) {
+          sigEvent->type = signalEventType::fileDelete;
+        } else if (event->Action == FILE_ACTION_MODIFIED) {
+          sigEvent->type = signalEventType::fileDataChange;
+        } else if (event->Action == FILE_ACTION_RENAMED_OLD_NAME) {
+          sigEvent->type = signalEventType::fileNameChange;
+        } else if (event->Action == FILE_ACTION_RENAMED_NEW_NAME) {
+          sigEvent->type = signalEventType::fileNameChange;
         }
-        bufferPtr += event->NextEntryOffset / 4;
-        bytesRead += event->NextEntryOffset / 4;
+        // signal
+        (*sig)(sigEvent);
 #if FILESYSTEM_SIGNAL_DEBUG
         std::cout << "Signal::watch(" << fileHandle
                   << ") NextEntryOffset=" << event->NextEntryOffset
@@ -116,6 +111,8 @@ void Signal::watch(HANDLE fileHandle, std::shared_ptr<HandleInfo> handleInfo) {
         if (event->NextEntryOffset == 0) {
           break;
         }
+        bufferPtr += event->NextEntryOffset / 4;
+        bytesRead += event->NextEntryOffset / 4;
       }
     } else {
       // error
